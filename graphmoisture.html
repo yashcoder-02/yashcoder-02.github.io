@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ThingSpeak Graph</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+<body>
+    <div id="chart_div"></div>
+    <script type="text/javascript">
+        // Your JavaScript code will go here
+    </script>
+</body>
+</html>
+<script type="text/javascript">
+    google.charts.load('current', { 'packages': ['corechart'] });
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+        var channelId = '2293534';
+        var apiKey = 'WCERYOHFECNAL2D9';
+        var numPoints = 10; // Number of data points to retrieve
+
+        // Make an AJAX request to the ThingSpeak API
+        $.ajax({
+            url: 'https://api.thingspeak.com/channels/' + channelId + '/feeds.json?results=' + numPoints,
+            type: 'GET',
+            data: { api_key: apiKey },
+            success: function (data) {
+                var chartData = new google.visualization.DataTable();
+                chartData.addColumn('datetime', 'Time');
+                chartData.addColumn('number', 'Value');
+
+                for (var i = 0; i < data.feeds.length; i++) {
+                    var entry = data.feeds[i];
+                    var timestamp = new Date(entry.created_at);
+                    var value = parseFloat(entry.field1);
+                    chartData.addRow([timestamp, value]);
+                }
+
+                var options = {
+                    title: 'ThingSpeak Graph',
+                    curveType: 'function',
+                    legend: { position: 'bottom' }
+                };
+
+                var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+                chart.draw(chartData, options);
+            }
+        });
+    }
+</script>
